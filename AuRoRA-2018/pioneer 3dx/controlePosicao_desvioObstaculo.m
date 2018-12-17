@@ -38,10 +38,8 @@ k2=0;
 %% Parametros das funções
 a1= 1.5; b = 1; T = 60; w = 2*pi/T;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% CONTROLE DE TRAJETORIA
-%  for k1 = 0.2:0.1:4.7
-%     for k2 = 0.2:0.1:4.7
-        t=tic;ta=tic;
+
+t=tic;ta=tic;
 k1=0.5;
 k2=0.3;
 Fk=0.05; %constante de respulsão
@@ -50,15 +48,6 @@ Fc =0.3; %constante de atração
             if toc(ta)>0.1
                 it=it+1;
                 ta=tic;
-                
-                %% Posição desejada para o Robô
-                %Trajetoria da Leminiscata como lugar desejado para o robô
-%               P.pPos.Xd(1)=a1*sin(w*toc(t));
-%               P.pPos.Xd(2)=b*sin(2*w*toc(t));
-%               P.pPos.Xd(7)= a1*w*cos(w*toc(t));
-%               P.pPos.Xd(8)= 2*b*w*cos(2*w*toc(t));
-%               P.pPos.Xc(6)=atan2(P.pPos.Xc(8),P.pPos.Xc(7));
-%               P.pPos.Xc([1 2 6])=2*randn(1);
 
                 P.pPos.Xd(1)=2;
                 P.pPos.Xd(2)=0;
@@ -90,13 +79,7 @@ Fc =0.3; %constante de atração
                     FrepSoma = sum(Frep,2);
                     Fatrac = Fc*[P.pPos.Xd([1 2])-P.pPos.X([1 2])]./distanciaAlvoRobo;
                     Fr = FrepSoma + Fatrac;
-%                 if -0.05< Fr(1)+Fr(2)<0.05
-%                     theta = atan(P.pPos.Xtil(2)/P.pPos.Xtil(1));
-%                     Fr = [cos(theta) sin(theta); sin(theta) cos(theta)]*[Fr(1);Fr(2)]
-%                 end
-%                 if Dados(it,25)-Dados(it-1,25)<
-% 
-%                 P.pPos.X([1 2])
+
                 if flag == 1 
                     P.pSC.Ud=K\(Fr);
                     flag=0;
@@ -104,12 +87,7 @@ Fc =0.3; %constante de atração
                     P.pSC.Ud=K\(P.pPos.Xd([7 8])+k1*tanh(k2*P.pPos.Xtil([1 2])));
                 end
                 
-%                 if P.pSC.Ud(1)>0.75
-%                     IAE=100000;
-%                     ITAE = 100000;
-%                     IASC = 100000;
-%                     break
-%                 end
+
                 P.rSendControlSignals;
                 %% Trace
                 Dados=[Dados ; [P.pPos.Xd' P.pPos.X' P.pPos.Xtil' P.pSC.Ud' P.pSC.Ur' toc(t)]];
@@ -146,24 +124,10 @@ Fc =0.3; %constante de atração
         IASC = IASC*0.1;
         Desempenho = [Desempenho; k1 k2 IAE ITAE IASC];
         P.pSC.Ud = [0; 0];
-        P.rSetPose([0 0 0 0])
+        P.rSetPose([0 0 0 0]);
         P.rSendControlSignals;
         pause(2)
-        
-%     end
-    
-% end
-
-
-
-% IAE = IAE*0.1;
-% ITAE = ITAE*0.1;
-% IASC = IASC*0.1;
-% disp('Desempenho do controlador de posição:');
-% disp(IAE);
-% disp(ITAE);
-% disp(IASC);
-% 
+        P.rDisconnect;
 
 
 %% Plotando resultados
