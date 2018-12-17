@@ -1,3 +1,6 @@
+%% O c√≥digo a seguir apresenta uma implementa√ß√£o de um algoritmo de desvio
+%% baseado na teoria de Campos Potenciais
+
 clear 
 close all
 clc
@@ -11,7 +14,7 @@ P.rConnect
 % - Integral do erro absoluto
 IAE=0;
 IAEt=0;
-% ñ Integral do erro absoluto vezes o tempo
+% ‚Äì Integral do erro absoluto vezes o tempo
 ITAE=0;
 % - Integral absoluta do sinal de controle
 IASC=0;
@@ -21,18 +24,18 @@ figure(1)
 hold on
 grid on
 axis([-5,5,-5,5])
-title('SimulaÁ„o')
+title('Simula√ß√£o')
 %% Declarando o trace
 Dados=[];
 Desempenho = [];
-%% Inicializando vari·veis para o controle
+%% Inicializando vari√°veis para o controle
 it=0;
 tmax=20;
 tparcial = 15;
 t=tic;ta=tic;
 k2=0;
 
-%% Parametros das funÁıes
+%% Parametros das fun√ß√µes
 a1= 1.5; b = 1; T = 60; w = 2*pi/T;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% CONTROLE DE TRAJETORIA
@@ -41,15 +44,15 @@ a1= 1.5; b = 1; T = 60; w = 2*pi/T;
         t=tic;ta=tic;
 k1=0.5;
 k2=0.3;
-Fk=0.05; %constante de respuls„o
-Fc =0.3; %constante de atraÁ„o
+Fk=0.05; %constante de respuls√£o
+Fc =0.3; %constante de atra√ß√£o
         while toc(t)<tmax
             if toc(ta)>0.1
                 it=it+1;
                 ta=tic;
                 
-                %% PosiÁ„o desejada para o RobÙ
-                %Trajetoria da Leminiscata como lugar desejado para o robÙ
+                %% Posi√ß√£o desejada para o Rob√¥
+                %Trajetoria da Leminiscata como lugar desejado para o rob√¥
 %               P.pPos.Xd(1)=a1*sin(w*toc(t));
 %               P.pPos.Xd(2)=b*sin(2*w*toc(t));
 %               P.pPos.Xd(7)= a1*w*cos(w*toc(t));
@@ -63,15 +66,15 @@ Fc =0.3; %constante de atraÁ„o
                 P.pPos.Xd(8)=0;
                 K=[ cos(P.pPos.X(6)) -P.pPar.a*sin(P.pPos.X(6)); sin(P.pPos.X(6)) P.pPar.a*cos(P.pPos.X(6))];
         
-                %% Pegar informaÁ„o de onde o robÙ esta
+                %% Pegar informa√ß√£o de onde o rob√¥ esta
                 P.rGetSensorData;
                 
                 %% Controle e Desvio de Obstaculo
-                %Erro de PosiÁ„o
+                %Erro de Posi√ß√£o
                 P.pPos.Xtil=P.pPos.Xd-P.pPos.X;
                 distanciaAlvoRobo = sqrt(P.pPos.Xtil([1])^2+P.pPos.Xtil([2])^2);
 
-                %Matriz de Obst·culos
+                %Matriz de Obst√°culos
                 Obst = [1 1; 0.1 -0.2];
                 
               
@@ -125,7 +128,7 @@ Fc =0.3; %constante de atraÁ„o
                 h(4)=plot(Obst(1,2),Obst(2,2),'or');
                 drawnow
                 %% Calculo de desempenho do controlador
-                % calculo do transitÛrio
+                % calculo do transit√≥rio
                 if toc(t)<15
                     IAEt = IAEt + norm(P.pPos.Xtil(1:2));
                 else
@@ -156,7 +159,7 @@ Fc =0.3; %constante de atraÁ„o
 % IAE = IAE*0.1;
 % ITAE = ITAE*0.1;
 % IASC = IASC*0.1;
-% disp('Desempenho do controlador de posiÁ„o:');
+% disp('Desempenho do controlador de posi√ß√£o:');
 % disp(IAE);
 % disp(ITAE);
 % disp(IASC);
@@ -165,7 +168,7 @@ Fc =0.3; %constante de atraÁ„o
 
 %% Plotando resultados
 hold off
-% %% Erro ~x e ~y em funÁao do tempo
+% %% Erro ~x e ~y em fun√ßao do tempo
 % figure(2)
 % plot(Dados(:,end),Dados(:,25),Dados(:,end),Dados(:,26));
 % axis([-0.5, tmax,-2,2])
@@ -175,27 +178,27 @@ hold off
 % ylabel('Metros');
 % legend('Erro X','Erro Y');
 % 
-% %% DiferenÁa Xd e Xr em funÁao do tempo
+% %% Diferen√ßa Xd e Xr em fun√ßao do tempo
 % figure(3)
 % plot(Dados(:,end),Dados(:,1),'--r',Dados(:,end),Dados(:,13),'-k');
 % axis([-0.5, tmax,-2,2]);
 % grid on
-% title('DiferenÁa em Xd e Xr');
+% title('Diferen√ßa em Xd e Xr');
 % xlabel('Tempo (s)');
 % ylabel('Metros');
 % legend('X desejado','X real');
 % 
-% %% DiferenÁa Yd e Yr em funÁao do tempo
+% %% Diferen√ßa Yd e Yr em fun√ßao do tempo
 % figure(4)
 % plot(Dados(:,end),Dados(:,2),'--r',Dados(:,end),Dados(:,14),'-k');
 % axis([-0.5, tmax,-2,2]);
 % grid on
-% title('DiferenÁa em Yd e Yr');
+% title('Diferen√ßa em Yd e Yr');
 % xlabel('Tempo (s)');
 % ylabel('Metros');
 % legend('Y desejado','Y real');
 % 
-% %% DiferenÁa Ud e Ur em funÁao do tempo
+% %% Diferen√ßa Ud e Ur em fun√ßao do tempo
 vector = 0.75*ones(size(Dados(:,end)));
 figure(5)
 plot(Dados(:,end),Dados(:,37),'--r',Dados(:,end),Dados(:,39),'-k',Dados(:,end),vector,'--b');
@@ -206,7 +209,7 @@ xlabel('Tempo (s)');
 ylabel('m/s');
 legend('U desejado','U real');
 % 
-%% DiferenÁa Wd e Wr em funÁao do tempo
+%% Diferen√ßa Wd e Wr em fun√ßao do tempo
 % figure(6)
 % plot(Dados(:,end),Dados(:,38),'--r',Dados(:,end),Dados(:,40),'-k');
 % grid on
