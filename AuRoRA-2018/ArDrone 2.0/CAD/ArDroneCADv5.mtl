@@ -1,0 +1,16 @@
+# Exported from 3D Builder
+
+newmtl Amarelo
+Kd 0.996078 0.945098 0.000000
+
+newmtl Preto
+Kd 0.000000 0.000000 0.000000
+
+newmtl Cinza
+Kd 0.501961 0.501961 0.501961
+
+newmtl Vermelho-escuro
+Kd 0.533333 0.000000 0.082353
+
+newmtl Verde
+Kd 0.129412 0.733333 0.298039
