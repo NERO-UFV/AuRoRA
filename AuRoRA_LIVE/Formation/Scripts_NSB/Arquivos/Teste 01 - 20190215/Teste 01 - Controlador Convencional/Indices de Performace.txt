@@ -1,0 +1,53 @@
+-------------------------
+Integral do Erro Absoluto
+-------------------------
+IAE
+ IAExf: 20.283
+ IAEyf: 12.5764
+ IAEzf: 0
+ IAErf: 12.8404
+ IAEbf: 71.1419
+ IAEaf: 34.9355
+ IAEf : 88.8901
+ 
+IAE Total
+  151.7772
+
+ 
+ 
+----------------------------
+Integral do Erro ao Quadrado
+----------------------------
+ISE
+ 
+ ISExf: 22.5552
+ ISEyf: 10.4056
+ ISEzf: 0
+ ISErf: 9.031
+ ISEbf: 83.7558
+ ISEaf: 20.0713
+ ISEf : 24.3032
+ 
+ISE Médio
+   24.3032
+
+
+
+
+% Ajusted Gains
+%1 1 1 1.5 0.75 0.6
+NSBF.pPar.K1 =    1*diag([1 1 2 1.2 0.1 0.1]);          % kinematic control gain - controls amplitude
+NSBF.pPar.K2 = 0.12*diag([1 1 1 1 1 1]);                  % kinematic control gain - control saturation
+
+
+% NSBF.pPar.K1 = 2*diag([1.0 1.0 1.0 0.8 0.08 0.08]);    % kinematic control gain  - controls amplitude
+% NSBF.pPar.K2 = 1*diag([0.1 0.1 0.025 0.1 0.01 0.01]);  % kinematic control gain - control saturation
+
+% NSBF.pPar.K1 = 1*diag([1 1 2 1 0.25 0.5]);             % kinematic control gain  - controls amplitude
+% NSBF.pPar.K2 = 1*diag([0.1 0.1 0.1 0.1 0.1 0.1]);      % kinematic control gain - control saturation
+
+
+
+% kx1 kx2 ky1 ky2 kz1 kz2 ; kPhi1 kPhi2 ktheta1 ktheta2 kPsi1 kPsi2
+gains = [0.7 0.8 0.7 0.8 5 2; 1 12 1 12 1 4];   % teste  simulacao Referencia
+pGains = [0.75 0.75 0.12 0.035];                % Ganhos do Compensador do Paioneer

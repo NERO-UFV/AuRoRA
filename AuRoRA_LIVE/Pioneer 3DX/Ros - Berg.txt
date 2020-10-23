@@ -1,0 +1,27 @@
+- Abrir o programa do ubuntu PuTTY
+
+- Ip: 	P1: 192.168.0.211	Port: 22
+	P2: 192.168.0.212
+	P3: 192.168.0.213
+
+- login: ubuntu		senha: ubuntu
+
+- configurações de rede: ifconfig
+
+- ver se ros ta rodando
+
+- rosnode list (/rosout --> master)
+
+- rosrun rosaria RosAria 192.168.0.148(RosAria nome da raspberry, ligar o pioneer)
+
+- MATLAB configurar variaveis ambiente (AuRoRA 2018/Pioneer 3DX/Teste_ROSARIA.m):
+
+- rostopic list (todos os topicos que posso inscrever ou publicar)
+
+- rostopic info /RosAria/pose (saber o tipo de mensagem)
+
+- Desconectar Ctrl+C (raspberry) rosshutdown (matlab)
+
+- shutdown [opção] now
+	-r (reiniciar o linux)
+	-h (desligar o linux)

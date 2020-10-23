@@ -1,0 +1,32 @@
+-------------------------
+Integral do Erro Absoluto
+-------------------------
+IAE
+ IAExf: 21.3038
+ IAEyf: 8.5989
+ IAEzf: 0
+ IAErf: 31.468
+ IAEbf: 117.2554
+ IAEaf: 50.1788
+ IAEf : 138.1612
+ 
+IAE Total
+  228.8049
+
+ 
+ 
+----------------------------
+Integral do Erro ao Quadrado
+----------------------------
+ISE
+ 
+ ISExf: 25.5608
+ ISEyf: 4.728
+ ISEzf: 0
+ ISErf: 22.0571
+ ISEbf: 223.6905
+ ISEaf: 41.5744
+ ISEf : 52.9351
+ 
+ISE Médio
+   52.9351

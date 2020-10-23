@@ -1,0 +1,71 @@
+- Controlador Convencional
+
+
+-------------------------
+Integral do Erro Absoluto
+-------------------------
+IAE
+ IAExf: 29.6337
+ IAEyf: 61.1641
+ IAEzf: 0
+ IAErf: 34.7812
+ IAEbf: 62.7627
+ IAEaf: 13.8419
+ IAEf : 108.044
+ 
+IAE Total
+  202.1836
+
+ 
+ 
+----------------------------
+Integral do Erro ao Quadrado
+----------------------------
+ISE
+ 
+ ISExf: 47.0396
+ ISEyf: 197.7762
+ ISEzf: 0
+ ISErf: 91.757
+ ISEbf: 135.9397
+ ISEaf: 8.7596
+ ISEf : 80.212
+ 
+ISE Médio
+   80.2120
+
+
+
+NSB - Prioridade de Posição
+-------------------------
+Integral do Erro Absoluto
+-------------------------
+IAE
+ IAExf: 29.7088
+ IAEyf: 61.3217
+ IAEzf: 0
+ IAErf: 30.149
+ IAEbf: 60.3687
+ IAEaf: 13.6667
+ IAEf : 104.5522
+ 
+IAE Total
+  195.2150
+
+ 
+ 
+----------------------------
+Integral do Erro ao Quadrado
+----------------------------
+ISE
+ 
+ ISExf: 47.0527
+ ISEyf: 197.8336
+ ISEzf: 0
+ ISErf: 80.377
+ ISEbf: 126.8582
+ ISEaf: 8.5983
+ ISEf : 76.7866
+ 
+ISE Médio
+   76.7866
