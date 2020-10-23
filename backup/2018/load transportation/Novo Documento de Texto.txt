@@ -1,0 +1,9 @@
+        
+        A.pPos.Xd(1) = a*sin(2*pi*w*tt) ;            % x
+        A.pPos.Xd(7) = a*2*pi*w*cos(2*pi*w*tt);     % dx
+        A.pPos.Xd(2) = b*sin(2*pi*2*w*tt);          % y
+        A.pPos.Xd(8) = b*2*pi*2*w*cos(2*pi*2*w*tt); % dy
+        %         A.pPos.Xd(3) = 1+c*sin(2*pi*w*tt);      % z 
+        %         A.pPos.Xd(9) = 2*pi*w*c*cos(2*pi*w*tt);
+        A.pPos.Xd(3) = 1.5;                         % z
+        A.pPos.Xd(9) = 0;

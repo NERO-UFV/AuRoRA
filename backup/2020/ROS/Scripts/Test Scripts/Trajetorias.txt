@@ -1,0 +1,16 @@
+            Xd = [rX*sin(w*toc(t));
+                rY*cos(0.5*w*toc(t));
+                1.5 + 0.5*sin(w*toc(t));
+                pi/6*sin(w*toc(t))];
+            
+            xdp_old = dXd;
+            
+            dXd = [w*rX*cos(w*toc(t));
+                -0.5*w*rY*sin(0.5*w*toc(t));
+                w*0.5*cos(w*toc(t));
+                w*pi/6*cos(w*toc(t))];
+            
+            ddXd = [-w^2*rX*sin(w*toc(t));
+                    -(0.5*w)^2*rY*sin(0.5*w*toc(t));
+                    -0.5*w^2*sin(w*toc(t));
+                    -w^2*pi/6*sin(w*toc(t))];

@@ -1,0 +1,1 @@
+X 	 Y 	 Z 	 Phi 	 Theta 	 Psi 	 Vx 	 Vy 	 Vz 	 dPhi 	 dTheta 	 dPsi 	Xd 	 Yd 	 Zd 	 Phid 	 Thetad 	 Psid 	  t

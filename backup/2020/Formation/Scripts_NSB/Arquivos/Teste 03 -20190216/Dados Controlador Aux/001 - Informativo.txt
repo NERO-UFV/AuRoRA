@@ -1,0 +1,13 @@
+
+
+- Foi utilizado a jacobiana de valentim e ajustes de ganhos para este controlador
+- Drone levantou voo e conseguiu se dirigir ao objetivo com os ganhos escolhidos
+
+% Ajusted Gains - Teste 02
+NSBF.pPar.K1 = 1*diag([1 1 0 1 0.025 0.25]);             % kinematic control gain - controls amplitude
+NSBF.pPar.K2 = 0.1*diag([1 1 1 1 2 2]);                 % kinematic control gain - control saturation
+
+
+
+- Comparar os jacobianos e verificar diferenca
+

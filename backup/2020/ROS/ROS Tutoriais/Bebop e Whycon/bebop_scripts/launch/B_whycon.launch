@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="namespace" default="B1" />
+    <arg name="ip" default="192.168.0.203" />
+    <!-- <arg name="ip" default="10.202.0.1" /> -->
+    <arg name="drone_type" default="bebop1" /> <!-- available drone types: bebop1, bebop2 -->
+    <arg name="config_file" default="$(find bebop_driver)/config/defaults.yaml" />
+    <arg name="camera_info_url" default="package://bebop_driver/data/$(arg drone_type)_camera_calib.yaml" />
+
+    <group ns="$(arg namespace)">
+        <!-- nodelet manager -->
+        <node pkg="nodelet" type="nodelet" name="bebop_nodelet_manager" args="manager" output="screen"/>
+        <!-- bebop_nodelet -->
+        <node pkg="nodelet" type="nodelet" name="bebop_nodelet"
+          args="load bebop_driver/BebopDriverNodelet bebop_nodelet_manager">
+            <param name="camera_info_url" value="$(arg camera_info_url)" />
+            <param name="bebop_ip" value="$(arg ip)" />
+            <param name="PilotingSettingsMaxTiltCurrent" value="5.0" />
+            <rosparam command="load" file="$(arg config_file)" />
+        </node>
+        <include file="$(find bebop_description)/launch/description.launch" />
+    </group>
+
+    <node pkg="rqt_reconfigure" type="rqt_reconfigure" name="reconfigurator"/>
+
+    <arg name="camInfo" default="/$(arg namespace)/camera_info" doc="camera_info topic"/>
+    <arg name="camRaw" default="/$(arg namespace)/image_raw" doc="image_raw topic"/>
+
+    <arg name="idBits" default="5" doc="Number of encoded bits"/>
+    <arg name="idSamples" default="360" doc="Number of samples to detect ID"/>
+    <arg name="hammingDist" default="1" doc="Hamming distance used for ID"/>
+    <arg name="maxMarkers" default="100" doc="Maximum possible amount of markers to be tracked"/>
+    <arg name="useGui" default="true" doc="Whether to use GUI"/>
+
+    <arg name="fontPath" value="$(find whycon_ros)/etc/font.ttf"/>
+    <arg name="calibDefPath" value="$(find whycon_ros)/etc/default.cal"/>
+
+    <node pkg="whycon_ros" type="whycon_ros" name="whycon_ros" output="screen" args="$(arg fontPath) $(arg calibDefPath)" launch-prefix="">
+
+        <remap from="/camera/camera_info" to="$(arg camInfo)"/>
+        <remap from="/camera/image_raw" to="$(arg camRaw)"/>
+
+        <param name="useGui" value="$(arg useGui)"/>
+        <param name="idBits" value="$(arg idBits)"/>
+        <param name="idSamples" value="$(arg idSamples)"/>
+        <param name="hammingDist" value="$(arg hammingDist)"/>
+        <param name="maxMarkers" value="$(arg maxMarkers)"/>
+
+    </node>
+
+    <node pkg="bebop_scripts" type="bebop_opt_odom.py" name="bebop_odom_opti" output="screen">
+        <param name="bodyName" type="string" value="$(arg namespace)"/>
+        </node>
+
+    <node pkg="bebop_scripts" type="bebop_opt_odom.py" name="pioneer_odom_opti" output="screen">
+        <param name="bodyName" type="string" value="P1"/>
+        </node>
+
+    <node pkg="bebop_scripts" type="whycon_publisher.py" name="whycon_publisher" output="screen">
+        <param name="bodyName" type="string" value="$(arg namespace)"/>
+        </node>
+
+</launch>
