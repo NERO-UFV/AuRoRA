@@ -72,3 +72,8 @@ live/Optitrack/arquivos raw/NatNetSDK/Samples/bin/x86/WinFormTestApp.exe,
 live/Pioneer 3DX/Mobile Robots/Mapper3Basic-2.2.5.exe,
  live/Pioneer 3DX/Mobile Robots/MobileSim-0.7.5.exe, 
 and live/ScadaBR/scadademobr.exe.
+
+Added
+
+backup/2020/ScadaBR/scadademobr.exe 
+and live/ScadaBR/scadademobr.exe.
