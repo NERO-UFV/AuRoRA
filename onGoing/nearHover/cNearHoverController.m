@@ -50,7 +50,7 @@ drone.pPos.Xda = drone.pPos.Xd;
 
 % Calculando erro de posição
 drone.pPos.Xtil = drone.pPos.Xd - drone.pPos.X;
-% display(drone.pPos.Xtil(4:6)');
+
 for ii = 4:6
     if abs(drone.pPos.Xtil(ii)) > pi
         drone.pPos.Xtil(ii) = -2*pi + drone.pPos.Xtil(ii);
@@ -66,15 +66,6 @@ R = [cos(drone.pPos.X(6)), sin(drone.pPos.X(6)), -drone.pPos.X(5);...
      drone.pPos.X(5)*drone.pPos.X(4)*cos(drone.pPos.X(6))-sin(drone.pPos.X(6)),...
      drone.pPos.X(5)*drone.pPos.X(4)*cos(drone.pPos.X(6))+cos(drone.pPos.X(6)),drone.pPos.X(4);...
      drone.pPos.X(5)*cos(drone.pPos.X(6))+drone.pPos.X(4)*sin(drone.pPos.X(6)),drone.pPos.X(5)*sin(drone.pPos.X(6))-drone.pPos.X(4)*cos(drone.pPos.X(6)),1];
-
-%Original
-% Rx = [1 0 0; 0 cos(drone.pPos.X(4)) -sin(drone.pPos.X(4)); 0 sin(drone.pPos.X(4)) cos(drone.pPos.X(4))];
-% Ry = [cos(drone.pPos.X(5)) 0 sin(drone.pPos.X(5)); 0 1 0; -sin(drone.pPos.X(5)) 0 cos(drone.pPos.X(5))];
-% Rz = [cos(drone.pPos.X(6)) -sin(drone.pPos.X(6)) 0; sin(drone.pPos.X(6)) cos(drone.pPos.X(6)) 0; 0 0 1];
-% 
-% R = (Rz*Ry*Rx);
-
- 
  
 %-------------------------------
 % Controle Cinematico
@@ -92,22 +83,24 @@ etas = drone.pPos.dXd(12) + Ganhos.ks1*tanh(Ganhos.ks2*drone.pPos.Xtil(6)) + Gan
 drone.pPos.Xd(4) =  atan2((etax*sin(drone.pPos.X(6))-etay*cos(drone.pPos.X(6)))*cos(drone.pPos.X(5)),(etaz+drone.pPar.g));
 drone.pPos.Xd(5) =  atan2((etax*cos(drone.pPos.X(6))+etay*sin(drone.pPos.X(6))),(etaz+drone.pPar.g));
 
-
-% display(drone.pPos.Xd(4:5));
-% Linear Kalman filter
-% GainK = (drone.pPar.LKF.msed + drone.pPar.LKF.varnd)\drone.pPar.LKF.msed;
-% drone.pPar.LKF.xd  = drone.pPar.LKF.xd + GainK*(drone.pPos.Xd(4:5) - drone.pPar.LKF.xd);
-% drone.pPar.LKF.msed = (eye(2)-GainK)*drone.pPar.LKF.msed + drone.pPar.LKF.varwd;
-% drone.pPos.Xd(4:5)  = drone.pPar.LKF.xd;
+for ii = 4:5
+    if abs(drone.pPos.Xd(ii)) > pi
+        drone.pPos.Xd(ii) = -2*pi + drone.pPos.Xd(ii);
+        disp('AHA')
+    end
+    if drone.pPos.Xd(ii) < -pi
+        drone.pPos.Xd(ii) = 2*pi + drone.pPos.Xd(ii);
+        disp('AHA')
+    end
+end
 
 % Filtro de orientacao(Robo)
 drone.pPos.Xd(10:11) = ((drone.pPos.Xd(4:5) - drone.pPos.Xda(4:5))/drone.pPar.Ts);
 
-
 % =========================================================================
 % Parte Translacional
 Mt = drone.pPar.m*eye(3,3);              % Inertia matrix
-Ct = zeros(3,3);                         % Coriolis matrix
+% Ct = zeros(3,3);                         % Coriolis matrix
 Gt = [0; 0; drone.pPar.m*drone.pPar.g];  % Gravity matrix
 
 % =========================================================================
@@ -124,15 +117,15 @@ Mr = [mr1;mr2;mr3];
 Z = zeros(3,3);
 
 % Coriolis comentada => assumiu-se produto de velocidades = 0;
-grande = drone.pPos.X(11)*(-drone.pPar.Ixx-(drone.pPar.Iyy/2)+(drone.pPar.Izz/2))-drone.pPos.X(12)*drone.pPos.X(5)*drone.pPar.Iyy;
-cr1 = [0, drone.pPos.X(4)*drone.pPos.X(11)*drone.pPar.Izz+drone.pPos.X(12)*(1/2)*(drone.pPar.Iyy-drone.pPar.Iyy),grande];
-grande2= drone.pPos.X(10)*(drone.pPar.Iyy-drone.pPar.Izz) +(drone.pPos.X(11)*drone.pPar.Ixx/2) -drone.pPos.X(5)*drone.pPos.X(12)*drone.pPar.Ixx;
-cr2 = [drone.pPos.X(6)*drone.pPar.Ixx/2, 2*drone.pPos.X(4)*drone.pPos.X(10)*drone.pPar.Izz,grande2];
-grande3= 2*drone.pPos.X(5)*drone.pPos.X(10)*drone.pPar.Ixx +2*drone.pPos.X(4)*drone.pPos.X(11)*drone.pPar.Iyy;
-cr3 = [-drone.pPos.X(11)*drone.pPar.Ixx, drone.pPos.X(10)*(drone.pPar.Iyy-drone.pPar.Izz),grande3];
-
-Cr = [cr1;cr2;cr3];
-CC = [Ct Z; Z Cr];   % Matriz de Coriolis
+% grande = drone.pPos.X(11)*(-drone.pPar.Ixx-(drone.pPar.Iyy/2)+(drone.pPar.Izz/2))-drone.pPos.X(12)*drone.pPos.X(5)*drone.pPar.Iyy;
+% cr1 = [0, drone.pPos.X(4)*drone.pPos.X(11)*drone.pPar.Izz+drone.pPos.X(12)*(1/2)*(drone.pPar.Iyy-drone.pPar.Iyy),grande];
+% grande2= drone.pPos.X(10)*(drone.pPar.Iyy-drone.pPar.Izz) +(drone.pPos.X(11)*drone.pPar.Ixx/2) -drone.pPos.X(5)*drone.pPos.X(12)*drone.pPar.Ixx;
+% cr2 = [drone.pPos.X(6)*drone.pPar.Ixx/2, 2*drone.pPos.X(4)*drone.pPos.X(10)*drone.pPar.Izz,grande2];
+% grande3= 2*drone.pPos.X(5)*drone.pPos.X(10)*drone.pPar.Ixx +2*drone.pPos.X(4)*drone.pPos.X(11)*drone.pPar.Iyy;
+% cr3 = [-drone.pPos.X(11)*drone.pPar.Ixx, drone.pPos.X(10)*(drone.pPar.Iyy-drone.pPar.Izz),grande3];
+% 
+% Cr = [cr1;cr2;cr3];
+% CC = [Ct Z; Z Cr];   % Matriz de Coriolis
 
 % Gravity vector
 Gr = [0; 0; 0];
