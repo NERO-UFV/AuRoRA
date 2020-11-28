@@ -2,3 +2,5 @@ Making MATLAB faster:
   - https://www.mathworks.com/matlabcentral/answers/419473-how-to-make-matlab-faster
   - https://www.mathworks.com/matlabcentral/answers/114515-how-to-make-matlab-code-execute-faster
   - https://www.mathworks.com/discovery/matlab-acceleration.html
+
+alteração
