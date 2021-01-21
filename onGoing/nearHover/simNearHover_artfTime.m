@@ -60,12 +60,14 @@ for t = 0:1/30:tmax
         
         XX(:,c) = [A.pPos.Xd; A.pPos.X; A.pSC.Ud; t];   
        
-        U = Ud;
+        A.pSC.U = A.pSC.Ud;
+        
+        A.rSendControlSignals;
 end   
 disp(toc(total))
 
 %% Mostra simulação?
-mostrar = 0;
+mostrar = 1;
 if mostrar
     showSim(XX,A)
 end
