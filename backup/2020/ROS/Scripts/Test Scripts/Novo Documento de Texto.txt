@@ -1,4 +1,0 @@
-    % Load Classes
-    RI = RosInterface;
-    RI.rConnect('192.168.0.166');    
-    B = Bebop(1,'B');
