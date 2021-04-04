@@ -3,7 +3,7 @@
 % Alexandre (07/08/19)
 
 %% Cleanup, call API and connect to V-REP
-clear vars
+clearvars
 close all
 clc
 
@@ -11,21 +11,23 @@ disp('tim_laser')
 V = VREP;
 V.vConnect;
 Variables;
+P = Pioneer3DX;
 
 % Handle Push Obj Class
 H = HandlePushObj;
 %% Load and stop Pioneer
 V.vHandle('Pioneer_p3dx');
-Ud = [0; 0];
-V.vSendControlSignals(Ud,1);
+P.pSC.Ud = [0; 0];
+V.vSendControlSignals(P,1);
 
 %% Collecting and plotting measurements
 % Get Robot Position
-[Pos.Xc,Pos.X, Pos.U] = V.vGetSensorData(1);
+% [Pos.Xc,Pos.X, Pos.U] = V.vGetSensorData(1);
+V.vGetSensorData(P,1);
 
 % Get Laser Data
 for i = 1:2
-    Map = V.vGetLaserData(1); 
+    Map = V.vGetLaserData(P,1); 
     pause(i)
 end
 

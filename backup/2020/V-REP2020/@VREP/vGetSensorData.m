@@ -10,8 +10,8 @@ function vGetSensorData(vrep,p3dx,Index)
      
     % Linear Transform to find the Control Point
     p3dx.pPos.X([1 2])= p3dx.pPos.Xc([1 2]) ...
-                         +[p3dx.pPar.a*cos(orientation(3)+p3dx.pPar.alpha);...
-                           p3dx.pPar.a*sin(orientation(3)+p3dx.pPar.alpha);]; 
+                         +[p3dx.pPar.a*cos(orientation(3));...
+                           p3dx.pPar.a*sin(orientation(3));]; 
 
     
 

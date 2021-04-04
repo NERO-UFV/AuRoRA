@@ -8,6 +8,7 @@ close all
 clc
 
 disp('tim_laser')
+P = Pioneer3DX;
 V = VREP;
 V.vConnect;
 Variables;
@@ -16,16 +17,15 @@ Variables;
 H = HandlePushObj;
 %% Load and stop Pioneer
 V.vHandle('Pioneer_p3dx');
-Ud = [0; 0];
-V.vSendControlSignals(Ud,1);
+V.vSendControlSignals(P,1);
 
 %% Collecting and plotting measurements
 % Get Robot Position
-[Pos.Xc,Pos.X, Pos.U] = V.vGetSensorData(1);
+V.vGetSensorData(P,1);
 
 % Get Laser Data
 for i = 1:2
-    Map = V.vGetLaserData(1); 
+    Map = V.vGetLaserData(P,1); 
     pause(i)
 end
 
@@ -37,14 +37,14 @@ V.vDisconnect;
 rth = createfigure(1:size(Map,1),Map(1:end,3),'ANGLE VS DISTANCE MEASUREMENTS','\theta_n [ °]','D_n [m]','D_n = r(\theta_n)');
 sth = createfigure(1:size(Map,1)-1,Map(2:end,3)-Map(1:end-1,3),'ANGLE VS DISTANCE DIFFERENCE','\theta_n [ °]','d_n [m]','d_n = s(\theta_n)');
 s = Map(2:end,3)-Map(1:end-1,3);
-% Detectar objetos e marcar gráfico
 
+% Detectar objetos e marcar gráfico
+% Future implementation framework idea:
 % [Min,Vert,Max]= H.ObjectSearch(Map);
 % figure
 % hold on
 % axis([-6,6,-6,6])
 % h = H.PlotMap(Map,Min,Vert,Max);
-
 
 f = figure;
 axes1 = axes('Parent',f);
@@ -109,7 +109,7 @@ saveas(sth,'s_clutter.pdf')
 saveas(f,'f_clutter.pdf')
 save('Map.mat','Map')
 
-%%
+%% 
 load('clutter.mat')
 rth = createfigure(1:size(Map,1),clutter(1:end,3) - Map(1:end,3),'Noise cancelled','\theta_n [ °]','D_n [m]','D_n = r(\theta_n)');
 

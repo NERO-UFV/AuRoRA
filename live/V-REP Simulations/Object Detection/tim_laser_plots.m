@@ -8,6 +8,7 @@ close all
 clc
  
 disp('tim_laser')
+P = Pioneer3DX;
 V = VREP;
 V.vConnect;
 Variables;
@@ -16,16 +17,15 @@ Variables;
 H = HandlePushObj;
 %% Load and stop Pioneer
 V.vHandle('Pioneer_p3dx');
-Ud = [0; 0];
-V.vSendControlSignals(Ud,1);
+V.vSendControlSignals(P,1);
  
 %% Collecting and plotting measurements
 % Get Robot Position
-[Pos.Xc,Pos.X, Pos.U] = V.vGetSensorData(1);
+V.vGetSensorData(P,1);
  
 % Get Laser Data
 for i = 1:2
-    Map = V.vGetLaserData(1); 
+    Map = V.vGetLaserData(P,1); 
     pause(i)
 end
 %Plots
