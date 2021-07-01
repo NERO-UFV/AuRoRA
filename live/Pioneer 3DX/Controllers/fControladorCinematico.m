@@ -5,7 +5,7 @@ function robot = fControladorCinematico(robot,pgains)
 
     if nargin < 2
 
-    pgains = [0.35 0.35 0.8 0.8];
+    	pgains = [0.35 0.35 0.8 0.8];
 
     end 
 

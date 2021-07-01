@@ -53,21 +53,21 @@ for t = 0:1/30:tmax
             A.pPos.Xd(6) = pi/4;
         end
         
-        % Controlador
-        A.rGetSensorData
-        
+      
         tc = tic;
         A = cNearHoverController(A);
         tg(c) = toc(tc);
         
         XX(:,c) = [A.pPos.Xd; A.pPos.X; A.pSC.Ud; t];   
        
+        A.pSC.U = A.pSC.Ud;
+        
         A.rSendControlSignals;
 end   
 disp(toc(total))
 
 %% Mostra simulação?
-mostrar = 0;
+mostrar = 1;
 if mostrar
     showSim(XX,A)
 end

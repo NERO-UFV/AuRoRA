@@ -1,9 +1,8 @@
-function drone = cUnderActuatedController(drone,cgains)
+function drone = cUnderActuatedControllerDaniel(drone,cgains,zdev)
 % Case do not have input gains
 if nargin < 2
-    cgains = [0.5 2 0.5 2 5 2; 1 15 1 15 1 2.5];  
+    cgains = [0.5 2 0.5 2 5 2; 1 15 1 15 .1 1];  
     % disp('Gains not given. Using standard ones.');
-%     cgains = [2 5 2 5 15 10; 20 5 20 5 15 10];
 end
 % Controllers Gains.
 % The Gains must be given in the folowing order
@@ -46,6 +45,7 @@ end
 % Ganhos.ks4 = sqrt(4*Ganhos.ks1*Ganhos.ks2)/Ganhos.ks3;
 
 
+% 
 % % Teste ganho drone real - marcos
 % Ganhos.kx1 = .5;
 % Ganhos.kx2 = 1.8;
@@ -88,16 +88,22 @@ Ganhos.kx1 = cgains(1,1);
 Ganhos.kx2 = cgains(1,2);
 Ganhos.kx3 = sqrt(4*Ganhos.kx1);
 Ganhos.kx4 = sqrt(4*Ganhos.kx1*Ganhos.kx2)/Ganhos.kx3;
+Ganhos.kx5 = cgains(3,1);
+Ganhos.kx6 = cgains(3,2);
 
 Ganhos.ky1 = cgains(1,3);
 Ganhos.ky2 = cgains(1,4);
 Ganhos.ky3 = sqrt(4*Ganhos.ky1);
 Ganhos.ky4 = sqrt(4*Ganhos.ky1*Ganhos.ky2)/Ganhos.ky3;
+Ganhos.ky5 = cgains(3,3);
+Ganhos.ky6 = cgains(3,4);
 
 Ganhos.kz1 = cgains(1,5);
 Ganhos.kz2 = cgains(1,6);
-Ganhos.kz3 = sqrt(4*Ganhos.kz1);
-Ganhos.kz4 = sqrt(4*Ganhos.kz1*Ganhos.kz2)/Ganhos.kz3;
+Ganhos.kz3 = zdev*sqrt(4*Ganhos.kz1);
+Ganhos.kz4 = zdev*sqrt(4*Ganhos.kz1*Ganhos.kz2)/Ganhos.kz3;
+Ganhos.kz5 = cgains(3,5);
+Ganhos.kz6 = cgains(3,6);
 
 % phi
 Ganhos.kp1 = cgains(2,1);
@@ -120,6 +126,7 @@ drone.pPos.Xda = drone.pPos.Xd;
 
 % Calculando erro de posição
 drone.pPos.Xtil = drone.pPos.Xd - drone.pPos.X;
+
 % display(drone.pPos.Xtil(4:6)');
 for ii = 4:6
     if abs(drone.pPos.Xtil(ii)) > pi
@@ -129,6 +136,28 @@ for ii = 4:6
         drone.pPos.Xtil(ii) = 2*pi + drone.pPos.Xtil(ii);
     end
 end
+
+% Calculando integral do erro
+% drone.pPos.intXtil(1:3) = drone.pPos.intXtil(1:3) + drone.pPos.Xtil(7:9)*drone.pPar.Ts; ANTES!!  ].01 1 0.01 1 .5 1] -> Ganhos Integrativos
+
+if abs(drone.pPos.Xtil(1)) < 0.3
+    drone.pPos.intXtil(1) = drone.pPos.intXtil(1) + drone.pPos.Xtil(7)*drone.pPar.Ts;
+else
+    drone.pPos.intXtil(1) = 0;
+end
+
+if abs(drone.pPos.Xtil(2)) < 0.3
+    drone.pPos.intXtil(2) = drone.pPos.intXtil(2) + drone.pPos.Xtil(8)*drone.pPar.Ts;
+else
+    drone.pPos.intXtil(2) = 0;
+end
+
+if abs(drone.pPos.Xtil(3)) < 0.6
+    drone.pPos.intXtil(3) = drone.pPos.intXtil(3) + drone.pPos.Xtil(9)*drone.pPar.Ts;
+
+end
+
+
 
 % Matriz de rotação
 Rx = [1 0 0; 0 cos(drone.pPos.X(4)) -sin(drone.pPos.X(4)); 0 sin(drone.pPos.X(4)) cos(drone.pPos.X(4))];
@@ -140,9 +169,9 @@ R = (Rz*Ry*Rx);
 %-------------------------------
 % Controle Cinematico
 %-------------------------------
-etax = drone.pPos.dXd(7) + Ganhos.kx1*tanh(Ganhos.kx2*drone.pPos.Xtil(1)) + Ganhos.kx3*tanh(Ganhos.kx4*drone.pPos.Xtil(7));
-etay = drone.pPos.dXd(8) + Ganhos.ky1*tanh(Ganhos.ky2*drone.pPos.Xtil(2)) + Ganhos.ky3*tanh(Ganhos.ky4*drone.pPos.Xtil(8));
-etaz = drone.pPos.dXd(9) + Ganhos.kz1*tanh(Ganhos.kz2*drone.pPos.Xtil(3)) + Ganhos.kz3*tanh(Ganhos.kz4*drone.pPos.Xtil(9));
+etax = drone.pPos.dXd(7) + Ganhos.kx1*tanh(Ganhos.kx2*drone.pPos.Xtil(1)) + Ganhos.kx3*tanh(Ganhos.kx4*drone.pPos.Xtil(7)) + Ganhos.kx5*tanh(Ganhos.kx6*drone.pPos.intXtil(1));
+etay = drone.pPos.dXd(8) + Ganhos.ky1*tanh(Ganhos.ky2*drone.pPos.Xtil(2)) + Ganhos.ky3*tanh(Ganhos.ky4*drone.pPos.Xtil(8)) + Ganhos.ky5*tanh(Ganhos.ky6*drone.pPos.intXtil(2));
+etaz = drone.pPos.dXd(9) + Ganhos.kz1*tanh(Ganhos.kz2*drone.pPos.Xtil(3)) + Ganhos.kz3*tanh(Ganhos.kz4*drone.pPos.Xtil(9)) + Ganhos.kz5*tanh(Ganhos.kz6*drone.pPos.intXtil(3));
 
 etap = drone.pPos.dXd(10) + Ganhos.kp1*tanh(Ganhos.kp2*drone.pPos.Xtil(4)) + Ganhos.kp3*tanh(Ganhos.kp4*drone.pPos.Xtil(10));
 etat = drone.pPos.dXd(11) + Ganhos.kt1*tanh(Ganhos.kt2*drone.pPos.Xtil(5)) + Ganhos.kt3*tanh(Ganhos.kt4*drone.pPos.Xtil(11));
@@ -175,17 +204,32 @@ Gt = [0; 0; drone.pPar.m*drone.pPar.g];  % Gravity matrix
 
 % =========================================================================
 % Rotational inertia matrix
-Mr = [drone.pPar.Ixx, drone.pPar.Ixy*cos(drone.pPos.X(4)) - drone.pPar.Ixz*sin(drone.pPos.X(4)), -drone.pPar.Ixx*sin(drone.pPos.X(5)) + drone.pPar.Ixy*sin(drone.pPos.X(4))*cos(drone.pPos.X(5)) + drone.pPar.Ixz*cos(drone.pPos.X(4))*cos(drone.pPos.X(5));
-    drone.pPar.Ixy*cos(drone.pPos.X(4)) - drone.pPar.Ixz*sin(drone.pPos.X(4)),  drone.pPar.Iyy*cos(drone.pPos.X(4))^2 + drone.pPar.Izz*sin(drone.pPos.X(4))^2 - 2*drone.pPar.Iyz*sin(drone.pPos.X(4))*cos(drone.pPos.X(4)),  drone.pPar.Iyy*sin(drone.pPos.X(4))*cos(drone.pPos.X(4))*cos(drone.pPos.X(5)) - drone.pPar.Izz*sin(drone.pPos.X(4))*cos(drone.pPos.X(4))*cos(drone.pPos.X(5)) - drone.pPar.Ixy*cos(drone.pPos.X(4))*sin(drone.pPos.X(5)) + drone.pPar.Ixz*sin(drone.pPos.X(4))*sin(drone.pPos.X(5)) + drone.pPar.Iyz*cos(drone.pPos.X(4))^2*cos(drone.pPos.X(5)) - drone.pPar.Iyz*sin(drone.pPos.X(4))^2*cos(drone.pPos.X(5));
-    -drone.pPar.Ixx*sin(drone.pPos.X(5)) + drone.pPar.Ixy*sin(drone.pPos.X(4))*cos(drone.pPos.X(5)) + drone.pPar.Ixz*cos(drone.pPos.X(4))*cos(drone.pPos.X(5)), drone.pPar.Iyy*sin(drone.pPos.X(4))*cos(drone.pPos.X(4))*cos(drone.pPos.X(5)) - drone.pPar.Izz*sin(drone.pPos.X(4))*cos(drone.pPos.X(4))*cos(drone.pPos.X(5)) - drone.pPar.Ixy*cos(drone.pPos.X(4))*sin(drone.pPos.X(5)) + drone.pPar.Ixz*sin(drone.pPos.X(4))*sin(drone.pPos.X(5)) + drone.pPar.Iyz*cos(drone.pPos.X(4))^2*cos(drone.pPos.X(5)) - drone.pPar.Iyz*sin(drone.pPos.X(4))^2*cos(drone.pPos.X(5)),  drone.pPar.Ixx*sin(drone.pPos.X(5))^2 + drone.pPar.Iyy*sin(drone.pPos.X(4))^2*cos(drone.pPos.X(5))^2 + drone.pPar.Izz*cos(drone.pPos.X(4))^2*cos(drone.pPos.X(5))^2 - 2*drone.pPar.Ixy*sin(drone.pPos.X(4))*sin(drone.pPos.X(5))*cos(drone.pPos.X(5)) - 2*drone.pPar.Ixz*cos(drone.pPos.X(4))*sin(drone.pPos.X(5))*cos(drone.pPos.X(5)) + 2*drone.pPar.Iyz*sin(drone.pPos.X(4))*cos(drone.pPos.X(4))*cos(drone.pPos.X(5))^2];
+Mr = [drone.pPar.Ixx, ...
+    drone.pPar.Ixy*cos(drone.pPos.X(4)) - drone.pPar.Ixz*sin(drone.pPos.X(4)), ...
+    -drone.pPar.Ixx*sin(drone.pPos.X(5)) + drone.pPar.Ixy*sin(drone.pPos.X(4))*cos(drone.pPos.X(5)) + drone.pPar.Ixz*cos(drone.pPos.X(4))*cos(drone.pPos.X(5));
+    
+    drone.pPar.Ixy*cos(drone.pPos.X(4)) - drone.pPar.Ixz*sin(drone.pPos.X(4)), ...
+    drone.pPar.Iyy*cos(drone.pPos.X(4))^2 + drone.pPar.Izz*sin(drone.pPos.X(4))^2 - 2*drone.pPar.Iyz*sin(drone.pPos.X(4))*cos(drone.pPos.X(4)),...
+    drone.pPar.Iyy*sin(drone.pPos.X(4))*cos(drone.pPos.X(4))*cos(drone.pPos.X(5)) - drone.pPar.Izz*sin(drone.pPos.X(4))*cos(drone.pPos.X(4))*cos(drone.pPos.X(5)) - drone.pPar.Ixy*cos(drone.pPos.X(4))*sin(drone.pPos.X(5)) + drone.pPar.Ixz*sin(drone.pPos.X(4))*sin(drone.pPos.X(5)) + drone.pPar.Iyz*cos(drone.pPos.X(4))^2*cos(drone.pPos.X(5)) - drone.pPar.Iyz*sin(drone.pPos.X(4))^2*cos(drone.pPos.X(5));
+    
+    -drone.pPar.Ixx*sin(drone.pPos.X(5)) + drone.pPar.Ixy*sin(drone.pPos.X(4))*cos(drone.pPos.X(5)) + drone.pPar.Ixz*cos(drone.pPos.X(4))*cos(drone.pPos.X(5)), ...
+    drone.pPar.Iyy*sin(drone.pPos.X(4))*cos(drone.pPos.X(4))*cos(drone.pPos.X(5)) - drone.pPar.Izz*sin(drone.pPos.X(4))*cos(drone.pPos.X(4))*cos(drone.pPos.X(5)) - drone.pPar.Ixy*cos(drone.pPos.X(4))*sin(drone.pPos.X(5)) + drone.pPar.Ixz*sin(drone.pPos.X(4))*sin(drone.pPos.X(5)) + drone.pPar.Iyz*cos(drone.pPos.X(4))^2*cos(drone.pPos.X(5)) - drone.pPar.Iyz*sin(drone.pPos.X(4))^2*cos(drone.pPos.X(5)),...
+    drone.pPar.Ixx*sin(drone.pPos.X(5))^2 + drone.pPar.Iyy*sin(drone.pPos.X(4))^2*cos(drone.pPos.X(5))^2 + drone.pPar.Izz*cos(drone.pPos.X(4))^2*cos(drone.pPos.X(5))^2 - 2*drone.pPar.Ixy*sin(drone.pPos.X(4))*sin(drone.pPos.X(5))*cos(drone.pPos.X(5)) - 2*drone.pPar.Ixz*cos(drone.pPos.X(4))*sin(drone.pPos.X(5))*cos(drone.pPos.X(5)) + 2*drone.pPar.Iyz*sin(drone.pPos.X(4))*cos(drone.pPos.X(4))*cos(drone.pPos.X(5))^2
+    ];
 
 % Rotational Coriolis matrix
-Cr = [ 0,     drone.pPos.X(11)*(drone.pPar.Iyy*sin(drone.pPos.X(4))*cos(drone.pPos.X(5)) - drone.pPar.Izz*sin(drone.pPos.X(4))*cos(drone.pPos.X(4)) + drone.pPar.Iyz*cos(drone.pPos.X(4))^2 - drone.pPar.Iyz*sin(drone.pPos.X(4))^2) + drone.pPos.X(12)*(-drone.pPar.Ixx*cos(drone.pPos.X(5))/2 - drone.pPar.Iyy*cos(drone.pPos.X(4))^2*cos(drone.pPos.X(5))/2 + drone.pPar.Iyy*sin(drone.pPos.X(4))^2*cos(drone.pPos.X(5))/2 + drone.pPar.Izz*cos(drone.pPos.X(4))^2*cos(drone.pPos.X(5))/2 - drone.pPar.Izz*sin(drone.pPos.X(4))^2*cos(drone.pPos.X(5))/2 - drone.pPar.Ixy*sin(drone.pPos.X(4))*sin(drone.pPos.X(5)) - drone.pPar.Ixz*cos(drone.pPos.X(4))*sin(drone.pPos.X(5)) + 2*drone.pPar.Iyz*sin(drone.pPos.X(4))*cos(drone.pPos.X(4))*cos(drone.pPos.X(5))),...
+Cr = [ 0, ...
+    drone.pPos.X(11)*(drone.pPar.Iyy*sin(drone.pPos.X(4))*cos(drone.pPos.X(5)) - drone.pPar.Izz*sin(drone.pPos.X(4))*cos(drone.pPos.X(4)) + drone.pPar.Iyz*cos(drone.pPos.X(4))^2 - drone.pPar.Iyz*sin(drone.pPos.X(4))^2) + drone.pPos.X(12)*(-drone.pPar.Ixx*cos(drone.pPos.X(5))/2 - drone.pPar.Iyy*cos(drone.pPos.X(4))^2*cos(drone.pPos.X(5))/2 + drone.pPar.Iyy*sin(drone.pPos.X(4))^2*cos(drone.pPos.X(5))/2 + drone.pPar.Izz*cos(drone.pPos.X(4))^2*cos(drone.pPos.X(5))/2 - drone.pPar.Izz*sin(drone.pPos.X(4))^2*cos(drone.pPos.X(5))/2 - drone.pPar.Ixy*sin(drone.pPos.X(4))*sin(drone.pPos.X(5)) - drone.pPar.Ixz*cos(drone.pPos.X(4))*sin(drone.pPos.X(5)) + 2*drone.pPar.Iyz*sin(drone.pPos.X(4))*cos(drone.pPos.X(4))*cos(drone.pPos.X(5))),...
     drone.pPos.X(11)*(-drone.pPar.Ixx*cos(drone.pPos.X(5))/2 - drone.pPar.Iyy*cos(drone.pPos.X(4))^2*cos(drone.pPos.X(5))/2 + drone.pPar.Iyy*sin(drone.pPos.X(4))^2*cos(drone.pPos.X(5))/2 + drone.pPar.Izz*cos(drone.pPos.X(4))^2*cos(drone.pPos.X(5))/2 - drone.pPar.Izz*sin(drone.pPos.X(4))^2*cos(drone.pPos.X(5))/2 - drone.pPar.Ixy*sin(drone.pPos.X(4))*sin(drone.pPos.X(5)) - drone.pPar.Ixz*cos(drone.pPos.X(4))*sin(drone.pPos.X(5)) + 2*drone.pPar.Iyz*sin(drone.pPos.X(4))*cos(drone.pPos.X(4))*cos(drone.pPos.X(5))) + drone.pPos.X(12)*(-drone.pPar.Iyy*sin(drone.pPos.X(4))*cos(drone.pPos.X(4))*cos(drone.pPos.X(5))^2 + drone.pPar.Izz*sin(drone.pPos.X(4))*cos(drone.pPos.X(4))*cos(drone.pPos.X(5))^2 + drone.pPar.Ixy*cos(drone.pPos.X(4))*sin(drone.pPos.X(5))*cos(drone.pPos.X(5)) - drone.pPar.Ixz*sin(drone.pPos.X(4))*sin(drone.pPos.X(5))*cos(drone.pPos.X(5)) - drone.pPar.Iyz*cos(drone.pPos.X(4))^2*cos(drone.pPos.X(5))^2 + drone.pPar.Iyz*sin(drone.pPos.X(4))^2*cos(drone.pPos.X(5))^2);
+    
     drone.pPos.X(10)*(-drone.pPar.Ixy*sin(drone.pPos.X(4)) - drone.pPar.Ixz*cos(drone.pPos.X(4))) + drone.pPos.X(11)*(-drone.pPar.Iyy*sin(drone.pPos.X(4))*cos(drone.pPos.X(4)) + drone.pPar.Izz*sin(drone.pPos.X(4))*cos(drone.pPos.X(4)) - drone.pPar.Iyz*cos(drone.pPos.X(4))^2 + drone.pPar.Iyz*sin(drone.pPos.X(4))^2) + drone.pPos.X(12)*(drone.pPar.Ixx*cos(drone.pPos.X(5))/2 + drone.pPar.Iyy*cos(drone.pPos.X(4))^2*cos(drone.pPos.X(5))/2 - drone.pPar.Iyy*sin(drone.pPos.X(4))^2*cos(drone.pPos.X(5))/2 - drone.pPar.Izz*cos(drone.pPos.X(4))^2*cos(drone.pPos.X(5))/2 + drone.pPar.Izz*sin(drone.pPos.X(4))^2*cos(drone.pPos.X(5))/2 + drone.pPar.Ixy*sin(drone.pPos.X(4))*sin(drone.pPos.X(5)) + drone.pPar.Ixz*cos(drone.pPos.X(4))*sin(drone.pPos.X(5)) - 2*drone.pPar.Iyz*sin(drone.pPos.X(4))*cos(drone.pPos.X(4))*cos(drone.pPos.X(5))),...
     drone.pPos.X(10)*(-drone.pPar.Iyy*sin(drone.pPos.X(4))*cos(drone.pPos.X(4)) + drone.pPar.Izz*sin(drone.pPos.X(4))*cos(drone.pPos.X(4)) - drone.pPar.Iyz*cos(drone.pPos.X(4))^2 + drone.pPar.Iyz*sin(drone.pPos.X(4))^2),...
     drone.pPos.X(10)*(drone.pPar.Ixx*cos(drone.pPos.X(5))/2 + drone.pPar.Iyy*cos(drone.pPos.X(4))^2*cos(drone.pPos.X(5))/2 - drone.pPar.Iyy*sin(drone.pPos.X(4))^2*cos(drone.pPos.X(5))/2 - drone.pPar.Izz*cos(drone.pPos.X(4))^2*cos(drone.pPos.X(5))/2 + drone.pPar.Izz*sin(drone.pPos.X(4))^2*cos(drone.pPos.X(5))/2 + drone.pPar.Ixy*sin(drone.pPos.X(4))*sin(drone.pPos.X(5)) + drone.pPar.Ixz*cos(drone.pPos.X(4))*sin(drone.pPos.X(5)) - 2*drone.pPar.Iyz*sin(drone.pPos.X(4))*cos(drone.pPos.X(4))*cos(drone.pPos.X(5))) + drone.pPos.X(12)*(-drone.pPar.Ixx*sin(drone.pPos.X(5))*cos(drone.pPos.X(5)) + drone.pPar.Iyy*sin(drone.pPos.X(4))^2*sin(drone.pPos.X(5))*cos(drone.pPos.X(5)) + drone.pPar.Izz*cos(drone.pPos.X(4))^2*sin(drone.pPos.X(5))*cos(drone.pPos.X(5)) + drone.pPar.Ixy*sin(drone.pPos.X(4))*cos(drone.pPos.X(5))^2 - drone.pPar.Ixy*sin(drone.pPos.X(4))*sin(drone.pPos.X(5))^2 + drone.pPar.Ixz*cos(drone.pPos.X(4))*cos(drone.pPos.X(5))^2 - drone.pPar.Ixz*cos(drone.pPos.X(4))*sin(drone.pPos.X(5))^2 + 2*drone.pPar.Iyz*sin(drone.pPos.X(4))*cos(drone.pPos.X(4))*sin(drone.pPos.X(5))*cos(drone.pPos.X(5)));
-    drone.pPos.X(10)*(drone.pPar.Ixy*cos(drone.pPos.X(4))*cos(drone.pPos.X(5)) - drone.pPar.Ixz*sin(drone.pPos.X(4))*cos(drone.pPos.X(5))) + drone.pPos.X(11)*(-drone.pPar.Ixx*cos(drone.pPos.X(5))/2 + drone.pPar.Iyy*cos(drone.pPos.X(4))^2*cos(drone.pPos.X(5))/2 - drone.pPar.Iyy*sin(drone.pPos.X(4))^2*cos(drone.pPos.X(5))/2 - drone.pPar.Izz*cos(drone.pPos.X(4))^2*cos(drone.pPos.X(5))/2 + drone.pPar.Izz*sin(drone.pPos.X(4))^2*cos(drone.pPos.X(5))/2 - 2*drone.pPar.Iyz*sin(drone.pPos.X(4))*cos(drone.pPos.X(4))*cos(drone.pPos.X(5))) + drone.pPos.X(12)*(drone.pPar.Iyy*sin(drone.pPos.X(4))*cos(drone.pPos.X(4))*cos(drone.pPos.X(5))^2 - drone.pPar.Izz*sin(drone.pPos.X(4))*cos(drone.pPos.X(4))*cos(drone.pPos.X(5))^2 - drone.pPar.Ixy*cos(drone.pPos.X(4))*sin(drone.pPos.X(5))*cos(drone.pPos.X(5)) + drone.pPar.Ixz*sin(drone.pPos.X(4))*sin(drone.pPos.X(5))*cos(drone.pPos.X(5)) + drone.pPar.Iyz*cos(drone.pPos.X(4))^2*cos(drone.pPos.X(5))^2 - drone.pPar.Iyz*sin(drone.pPos.X(4))^2*cos(drone.pPos.X(5))^2),    drone.pPos.X(10)*(-drone.pPar.Ixx*cos(drone.pPos.X(5))/2 + drone.pPar.Iyy*cos(drone.pPos.X(4))^2*cos(drone.pPos.X(5))/2 - drone.pPar.Iyy*sin(drone.pPos.X(4))^2*cos(drone.pPos.X(5))/2 - drone.pPar.Izz*cos(drone.pPos.X(4))^2*cos(drone.pPos.X(5))/2 + drone.pPar.Izz*sin(drone.pPos.X(4))^2*cos(drone.pPos.X(5))/2 - 2*drone.pPar.Iyz*sin(drone.pPos.X(4))*cos(drone.pPos.X(4))*cos(drone.pPos.X(5))) + drone.pPos.X(11)*(-drone.pPar.Iyy*sin(drone.pPos.X(4))*cos(drone.pPos.X(4))*sin(drone.pPos.X(5)) + drone.pPar.Izz*sin(drone.pPos.X(4))*cos(drone.pPos.X(4))*sin(drone.pPos.X(5)) - drone.pPar.Ixy*cos(drone.pPos.X(4))*cos(drone.pPos.X(5)) + drone.pPar.Ixz*sin(drone.pPos.X(4))*cos(drone.pPos.X(5)) + drone.pPar.Iyz*sin(drone.pPos.X(4))^2*sin(drone.pPos.X(5)) - drone.pPar.Iyz*cos(drone.pPos.X(4))^2*sin(drone.pPos.X(5))) + drone.pPos.X(12)*(drone.pPar.Ixx*sin(drone.pPos.X(5))*cos(drone.pPos.X(5)) - drone.pPar.Iyy*sin(drone.pPos.X(4))^2*sin(drone.pPos.X(5))*cos(drone.pPos.X(5)) - drone.pPar.Izz*cos(drone.pPos.X(4))^2*sin(drone.pPos.X(5))*cos(drone.pPos.X(5)) - drone.pPar.Ixy*sin(drone.pPos.X(4))*cos(drone.pPos.X(5))^2 + drone.pPar.Ixy*sin(drone.pPos.X(4))*sin(drone.pPos.X(5))^2 - drone.pPar.Ixz*cos(drone.pPos.X(4))*cos(drone.pPos.X(5))^2 + drone.pPar.Ixz*cos(drone.pPos.X(4))*sin(drone.pPos.X(5))^2 - 2*drone.pPar.Iyz*sin(drone.pPos.X(4))*cos(drone.pPos.X(4))*sin(drone.pPos.X(5))*cos(drone.pPos.X(5))),    drone.pPos.X(10)*(drone.pPar.Iyy*sin(drone.pPos.X(4))*cos(drone.pPos.X(4))*cos(drone.pPos.X(5))^2 - drone.pPar.Izz*sin(drone.pPos.X(4))*cos(drone.pPos.X(4))*cos(drone.pPos.X(5))^2 - drone.pPar.Ixy*cos(drone.pPos.X(4))*sin(drone.pPos.X(5))*cos(drone.pPos.X(5)) + drone.pPar.Ixz*sin(drone.pPos.X(4))*sin(drone.pPos.X(5))*cos(drone.pPos.X(5)) + drone.pPar.Iyz*cos(drone.pPos.X(4))^2*cos(drone.pPos.X(5))^2 - drone.pPar.Iyz*sin(drone.pPos.X(4))^2*cos(drone.pPos.X(5))^2) + drone.pPos.X(11)*(drone.pPar.Ixx*sin(drone.pPos.X(5))*cos(drone.pPos.X(5)) - drone.pPar.Iyy*sin(drone.pPos.X(4))^2*sin(drone.pPos.X(5))*cos(drone.pPos.X(5)) - drone.pPar.Izz*cos(drone.pPos.X(4))^2*sin(drone.pPos.X(5))*cos(drone.pPos.X(5)) - drone.pPar.Ixy*sin(drone.pPos.X(4))*cos(drone.pPos.X(5))^2 + drone.pPar.Ixy*sin(drone.pPos.X(4))*sin(drone.pPos.X(5))^2 - drone.pPar.Ixz*cos(drone.pPos.X(4))*cos(drone.pPos.X(5))^2 + drone.pPar.Ixz*cos(drone.pPos.X(4))*sin(drone.pPos.X(5))^2 - 2*drone.pPar.Iyz*sin(drone.pPos.X(4))*cos(drone.pPos.X(4))*sin(drone.pPos.X(5))*cos(drone.pPos.X(5)))];
+    
+    drone.pPos.X(10)*(drone.pPar.Ixy*cos(drone.pPos.X(4))*cos(drone.pPos.X(5)) - drone.pPar.Ixz*sin(drone.pPos.X(4))*cos(drone.pPos.X(5))) + drone.pPos.X(11)*(-drone.pPar.Ixx*cos(drone.pPos.X(5))/2 + drone.pPar.Iyy*cos(drone.pPos.X(4))^2*cos(drone.pPos.X(5))/2 - drone.pPar.Iyy*sin(drone.pPos.X(4))^2*cos(drone.pPos.X(5))/2 - drone.pPar.Izz*cos(drone.pPos.X(4))^2*cos(drone.pPos.X(5))/2 + drone.pPar.Izz*sin(drone.pPos.X(4))^2*cos(drone.pPos.X(5))/2 - 2*drone.pPar.Iyz*sin(drone.pPos.X(4))*cos(drone.pPos.X(4))*cos(drone.pPos.X(5))) + drone.pPos.X(12)*(drone.pPar.Iyy*sin(drone.pPos.X(4))*cos(drone.pPos.X(4))*cos(drone.pPos.X(5))^2 - drone.pPar.Izz*sin(drone.pPos.X(4))*cos(drone.pPos.X(4))*cos(drone.pPos.X(5))^2 - drone.pPar.Ixy*cos(drone.pPos.X(4))*sin(drone.pPos.X(5))*cos(drone.pPos.X(5)) + drone.pPar.Ixz*sin(drone.pPos.X(4))*sin(drone.pPos.X(5))*cos(drone.pPos.X(5)) + drone.pPar.Iyz*cos(drone.pPos.X(4))^2*cos(drone.pPos.X(5))^2 - drone.pPar.Iyz*sin(drone.pPos.X(4))^2*cos(drone.pPos.X(5))^2),...
+    drone.pPos.X(10)*(-drone.pPar.Ixx*cos(drone.pPos.X(5))/2 + drone.pPar.Iyy*cos(drone.pPos.X(4))^2*cos(drone.pPos.X(5))/2 - drone.pPar.Iyy*sin(drone.pPos.X(4))^2*cos(drone.pPos.X(5))/2 - drone.pPar.Izz*cos(drone.pPos.X(4))^2*cos(drone.pPos.X(5))/2 + drone.pPar.Izz*sin(drone.pPos.X(4))^2*cos(drone.pPos.X(5))/2 - 2*drone.pPar.Iyz*sin(drone.pPos.X(4))*cos(drone.pPos.X(4))*cos(drone.pPos.X(5))) + drone.pPos.X(11)*(-drone.pPar.Iyy*sin(drone.pPos.X(4))*cos(drone.pPos.X(4))*sin(drone.pPos.X(5)) + drone.pPar.Izz*sin(drone.pPos.X(4))*cos(drone.pPos.X(4))*sin(drone.pPos.X(5)) - drone.pPar.Ixy*cos(drone.pPos.X(4))*cos(drone.pPos.X(5)) + drone.pPar.Ixz*sin(drone.pPos.X(4))*cos(drone.pPos.X(5)) + drone.pPar.Iyz*sin(drone.pPos.X(4))^2*sin(drone.pPos.X(5)) - drone.pPar.Iyz*cos(drone.pPos.X(4))^2*sin(drone.pPos.X(5))) + drone.pPos.X(12)*(drone.pPar.Ixx*sin(drone.pPos.X(5))*cos(drone.pPos.X(5)) - drone.pPar.Iyy*sin(drone.pPos.X(4))^2*sin(drone.pPos.X(5))*cos(drone.pPos.X(5)) - drone.pPar.Izz*cos(drone.pPos.X(4))^2*sin(drone.pPos.X(5))*cos(drone.pPos.X(5)) - drone.pPar.Ixy*sin(drone.pPos.X(4))*cos(drone.pPos.X(5))^2 + drone.pPar.Ixy*sin(drone.pPos.X(4))*sin(drone.pPos.X(5))^2 - drone.pPar.Ixz*cos(drone.pPos.X(4))*cos(drone.pPos.X(5))^2 + drone.pPar.Ixz*cos(drone.pPos.X(4))*sin(drone.pPos.X(5))^2 - 2*drone.pPar.Iyz*sin(drone.pPos.X(4))*cos(drone.pPos.X(4))*sin(drone.pPos.X(5))*cos(drone.pPos.X(5))),...
+    drone.pPos.X(10)*(drone.pPar.Iyy*sin(drone.pPos.X(4))*cos(drone.pPos.X(4))*cos(drone.pPos.X(5))^2 - drone.pPar.Izz*sin(drone.pPos.X(4))*cos(drone.pPos.X(4))*cos(drone.pPos.X(5))^2 - drone.pPar.Ixy*cos(drone.pPos.X(4))*sin(drone.pPos.X(5))*cos(drone.pPos.X(5)) + drone.pPar.Ixz*sin(drone.pPos.X(4))*sin(drone.pPos.X(5))*cos(drone.pPos.X(5)) + drone.pPar.Iyz*cos(drone.pPos.X(4))^2*cos(drone.pPos.X(5))^2 - drone.pPar.Iyz*sin(drone.pPos.X(4))^2*cos(drone.pPos.X(5))^2) + drone.pPos.X(11)*(drone.pPar.Ixx*sin(drone.pPos.X(5))*cos(drone.pPos.X(5)) - drone.pPar.Iyy*sin(drone.pPos.X(4))^2*sin(drone.pPos.X(5))*cos(drone.pPos.X(5)) - drone.pPar.Izz*cos(drone.pPos.X(4))^2*sin(drone.pPos.X(5))*cos(drone.pPos.X(5)) - drone.pPar.Ixy*sin(drone.pPos.X(4))*cos(drone.pPos.X(5))^2 + drone.pPar.Ixy*sin(drone.pPos.X(4))*sin(drone.pPos.X(5))^2 - drone.pPar.Ixz*cos(drone.pPos.X(4))*cos(drone.pPos.X(5))^2 + drone.pPar.Ixz*cos(drone.pPos.X(4))*sin(drone.pPos.X(5))^2 - 2*drone.pPar.Iyz*sin(drone.pPos.X(4))*cos(drone.pPos.X(4))*sin(drone.pPos.X(5))*cos(drone.pPos.X(5)))
+    ];
 
 % Gravity vector
 Gr = [0; 0; 0];
@@ -273,17 +317,23 @@ Wda = drone.pSC.Wd;
 drone.pSC.Wd = sqrt(Fd/drone.pPar.Cf);
 
 % 2: Wr -> V 
-Vr = -drone.pPar.Vo + drone.pPar.Jm*drone.pPar.R/drone.pPar.Km*(drone.pSC.Wd-Wda)/drone.pPar.Ts +  (drone.pPar.Bm*drone.pPar.R/drone.pPar.Km + drone.pPar.Kb)*drone.pSC.Wd +  drone.pPar.Ct*drone.pPar.R/drone.pPar.Km/drone.pPar.r*drone.pSC.Wd.^2;
+Vr = -drone.pPar.Vo + drone.pPar.Jm*drone.pPar.R/drone.pPar.Km*(drone.pSC.Wd-Wda)/drone.pPar.Ts + ...
+    (drone.pPar.Bm*drone.pPar.R/drone.pPar.Km + drone.pPar.Kb)*drone.pSC.Wd + ...
+    drone.pPar.Ct*drone.pPar.R/drone.pPar.Km/drone.pPar.r*drone.pSC.Wd.^2;
 
 
 % 3: V -> Xr
-drone.pSC.Xr(4) = drone.pPos.X(4) + 1/(drone.pPar.kdp+drone.pPar.kpp*drone.pPar.Ts)*   (drone.pPar.kdp*(drone.pSC.Xr(4)-drone.pPos.X(4)) + 1/4*drone.pPar.Ts*([1 1 -1 -1]*Vr));
+drone.pSC.Xr(4) = drone.pPos.X(4) + 1/(drone.pPar.kdp+drone.pPar.kpp*drone.pPar.Ts)*...
+    (drone.pPar.kdp*(drone.pSC.Xr(4)-drone.pPos.X(4)) + 1/4*drone.pPar.Ts*([1 1 -1 -1]*Vr));
 
-drone.pSC.Xr(5) = drone.pPos.X(5) + 1/(drone.pPar.kdt+drone.pPar.kpt*drone.pPar.Ts)*    (drone.pPar.kdt*(drone.pSC.Xr(5)-drone.pPos.X(5)) + 1/4*drone.pPar.Ts*([-1 1 1 -1]*Vr));
+drone.pSC.Xr(5) = drone.pPos.X(5) + 1/(drone.pPar.kdt+drone.pPar.kpt*drone.pPar.Ts)*...
+    (drone.pPar.kdt*(drone.pSC.Xr(5)-drone.pPos.X(5)) + 1/4*drone.pPar.Ts*([-1 1 1 -1]*Vr));
 
-drone.pSC.Xr(9) = drone.pPos.X(9) + 1/(drone.pPar.kdz+drone.pPar.kpz*drone.pPar.Ts)*  (drone.pPar.kdz*(drone.pSC.Xr(9)-drone.pPos.X(9)) + 1/4*drone.pPar.Ts*([1 1 1 1]*Vr));
+drone.pSC.Xr(9) = drone.pPos.X(9) + 1/(drone.pPar.kdz+drone.pPar.kpz*drone.pPar.Ts)*...
+    (drone.pPar.kdz*(drone.pSC.Xr(9)-drone.pPos.X(9)) + 1/4*drone.pPar.Ts*([1 1 1 1]*Vr));
 
-drone.pSC.Xr(12) = drone.pPos.X(12) + 1/(drone.pPar.kds+drone.pPar.kps*drone.pPar.Ts)*    (drone.pPar.kds*(drone.pSC.Xr(12)-drone.pPos.X(12)) + 1/4*drone.pPar.Ts*([1 -1 1 -1]*Vr));
+drone.pSC.Xr(12) = drone.pPos.X(12) + 1/(drone.pPar.kds+drone.pPar.kps*drone.pPar.Ts)*...
+    (drone.pPar.kds*(drone.pSC.Xr(12)-drone.pPos.X(12)) + 1/4*drone.pPar.Ts*([1 -1 1 -1]*Vr));
 
 % 4: Xr -> U
 drone.pSC.Ud(1) =  drone.pSC.Xr(4)/drone.pPar.uSat(1);   % Phi

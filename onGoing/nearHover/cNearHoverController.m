@@ -1,18 +1,12 @@
-function drone = cNearHoverController(drone,cgains)
-% Case do not have input gains
-if nargin < 2
-    cgains = [.5 2 .5 2 5 2; 1 20 1 15 1 2.5];
-%     [0.5 2 0.5 2 5 2; 1 15 1 15 1 2.5]; 
-    
-    % disp('Gains not given. Using standard ones.');
-%     cgains = [2 5 2 5 15 10; 20 5 20 5 15 10];
-end
+function drone = cNearHoverController(drone)
+
+
+
 % Controllers Gains.
 % The Gains must be given in the folowing order
 % kx1 kx2 ky1 ky2 kz1 kz2 ; kPhi1 kPhi2 ktheta1 ktheta2 kPsi1 kPsi2
 % cgains = [.5 2 .5 2 5 2; 1 20 1 15 1 2.5];
-
-
+cgains = [.5 2 .5 2 5 2; 1 20 1 15 1 2.5];
 
 Ganhos.kx1 = cgains(1,1);
 Ganhos.kx2 = cgains(1,2);
@@ -82,17 +76,6 @@ etas = drone.pPos.dXd(12) + Ganhos.ks1*tanh(Ganhos.ks2*drone.pPos.Xtil(6)) + Gan
 % Referência de Rolagem e Arfagem (Inserir Filtragem)
 drone.pPos.Xd(4) =  atan2((etax*sin(drone.pPos.X(6))-etay*cos(drone.pPos.X(6)))*cos(drone.pPos.X(5)),(etaz+drone.pPar.g));
 drone.pPos.Xd(5) =  atan2((etax*cos(drone.pPos.X(6))+etay*sin(drone.pPos.X(6))),(etaz+drone.pPar.g));
-
-for ii = 4:5
-    if abs(drone.pPos.Xd(ii)) > pi
-        drone.pPos.Xd(ii) = -2*pi + drone.pPos.Xd(ii);
-        disp('AHA')
-    end
-    if drone.pPos.Xd(ii) < -pi
-        drone.pPos.Xd(ii) = 2*pi + drone.pPos.Xd(ii);
-        disp('AHA')
-    end
-end
 
 % Filtro de orientacao(Robo)
 drone.pPos.Xd(10:11) = ((drone.pPos.Xd(4:5) - drone.pPos.Xda(4:5))/drone.pPar.Ts);
