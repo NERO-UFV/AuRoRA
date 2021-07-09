@@ -1,4 +1,4 @@
-function newH=Wave(n,i,j,dt,c,k,H,oldH,fix,cont,connect)
+function [acceleration, newH] =Wave(n,i,j,dt,c,k,H,oldH,fix,cont,connect)
     global Ekin Epot;
          
     % DAMPED WAVE EQUATION:

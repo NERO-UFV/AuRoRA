@@ -7,7 +7,7 @@ r=ceil(width/2);
 
 
 %!!!
-pos=[X,Y];
+pos=[Y,X];
 x=X;
 y=Y;
 % get(handles.axes3,'currentpoint');
@@ -30,6 +30,8 @@ d=0;
 e=0;
 f=0;
 g=0;
+
+
 
 if b      % Type 2:
     [x,y] = ndgrid(-1.5:(2/(width/1.5-1)):1);
